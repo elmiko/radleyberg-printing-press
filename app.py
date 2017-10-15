@@ -50,7 +50,7 @@ class OSTemplateView(views.MethodView):
         template for substitution. These substitutions will override any
         default parameter values.
         """
-        args = flask.request.args
+        args = flask.request.args.to_dict(flat=True)
         if len(args) == 0 or 'version' not in args:
             version = 'latest'
         else:

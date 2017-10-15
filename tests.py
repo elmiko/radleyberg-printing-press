@@ -1,5 +1,7 @@
 import unittest
 
+import jinja2
+
 import app
 
 
@@ -10,11 +12,16 @@ class OSTemplateViewTestCase(unittest.TestCase):
 
     def test_latest_defaults(self):
         obs = self.app.get('/')
-        assert obs.data == STABLE_TEMPLATE.encode('utf-8')
+        exp = jinja2.Template(TEMPLATE).render(tag='stable').encode('utf-8')
+        assert obs.data == exp
+
+    def test_latest_tag(self):
+        obs = self.app.get('/?tag=testXX.YY.ZZ')
+        exp = jinja2.Template(TEMPLATE).render(tag='testXX.YY.ZZ').encode('utf-8')
+        assert obs.data == exp
 
 
-
-STABLE_TEMPLATE = """kind: List
+TEMPLATE = """kind: List
 apiVersion: v1
 metadata: {}
 
@@ -81,7 +88,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-pyspark:stable
+                name: radanalyticsio/radanalytics-pyspark:{{ tag }}
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -251,7 +258,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-java-spark:stable
+                name: radanalyticsio/radanalytics-java-spark:{{ tag }}
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -438,7 +445,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-scala-spark:stable
+                name: radanalyticsio/radanalytics-scala-spark:{{ tag }}
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -670,7 +677,7 @@ items:
       - name: OSHINKO_WEB_IMAGE
         description: Full name of the oshinko web image
         required: true
-        value: radanalyticsio/oshinko-webui:stable
+        value: radanalyticsio/oshinko-webui:{{ tag }}
       - name: OSHINKO_WEB_ROUTE_HOSTNAME
         description: The hostname used to create the external route for the webui
       - name: OSHINKO_DEPLOYMENT_NAME
