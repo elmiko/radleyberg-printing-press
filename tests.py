@@ -1,4 +1,20 @@
-kind: List
+import unittest
+
+import app
+
+
+class OSTemplateViewTestCase(unittest.TestCase):
+    def setUp(self):
+        config = app.ConfigWrapper()
+        self.app = app.app(config).test_client()
+
+    def test_latest_defaults(self):
+        obs = self.app.get('/')
+        assert obs.data == STABLE_TEMPLATE.encode('utf-8')
+
+
+
+STABLE_TEMPLATE = """kind: List
 apiVersion: v1
 metadata: {}
 
@@ -65,7 +81,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-pyspark:{{ tag }}
+                name: radanalyticsio/radanalytics-pyspark:stable
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -235,7 +251,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-java-spark:{{ tag }}
+                name: radanalyticsio/radanalytics-java-spark:stable
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -422,7 +438,7 @@ items:
               forcePull: true
               from:
                 kind: DockerImage
-                name: radanalyticsio/radanalytics-scala-spark:{{ tag }}
+                name: radanalyticsio/radanalytics-scala-spark:stable
           triggers:
             - type: ConfigChange
             - type: ImageChange
@@ -654,7 +670,7 @@ items:
       - name: OSHINKO_WEB_IMAGE
         description: Full name of the oshinko web image
         required: true
-        value: radanalyticsio/oshinko-webui:{{ tag }}
+        value: radanalyticsio/oshinko-webui:stable
       - name: OSHINKO_WEB_ROUTE_HOSTNAME
         description: The hostname used to create the external route for the webui
       - name: OSHINKO_DEPLOYMENT_NAME
@@ -662,4 +678,4 @@ items:
         value: "oshinko"
       - name: OSHINKO_REFRESH_INTERVAL
         value: "5"
-        description: Refresh interval for updating cluster list in seconds
+        description: Refresh interval for updating cluster list in seconds"""

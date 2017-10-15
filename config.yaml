@@ -1,4 +1,5 @@
 ---
 latest:
     template: resources.yaml
-    parameters: []
+    parameters:
+        tag: stable

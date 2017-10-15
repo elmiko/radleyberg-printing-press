@@ -6,4 +6,5 @@ from setuptools import setup
 setup(
     name='radleyberg-printing-press',
     version='0.1.0',
+    py_modules=["app"],
 )

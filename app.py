@@ -3,6 +3,8 @@
 The Radleyberg printing press is a Flask server that transforms HTTP
 requests into OpenShift templates.
 """
+import copy
+
 import flask
 from flask import views
 import yaml
@@ -10,19 +12,26 @@ import yaml
 
 class ConfigWrapper():
     """A helper for dealing with the configuration file"""
-    def __init__(self):
-        self.config = yaml.load(open('config.yaml').read())
+    def __init__(self, override=None):
+        if override is None:
+            self.config = yaml.load(open('config.yaml').read())
+        else:
+            self.config = override
 
     def has_version(self, version):
         """Does the config know about this version?"""
         return version in self.config
 
     def get(self, *args, **kwargs):
-        return self.config.get(*args, **kwargs)
+        return copy.deepcopy(self.config.get(*args, **kwargs))
+
+    def get_parameters(self, version):
+        """Return the parameters for a given version"""
+        return copy.deepcopy(self.config[version]['parameters'])
 
     def get_template(self, version):
         """Return the template name for a given version"""
-        return self.config[version]['template']
+        return copy.deepcopy(self.config[version]['template'])
 
 
 class OSTemplateView(views.MethodView):
@@ -52,7 +61,10 @@ class OSTemplateView(views.MethodView):
                     'template not found, check your parameters', 404)
         else:
             template = self.config.get_template(version)
-            rend = flask.render_template(template, **args).encode('utf-8')
+            parameters = self.config.get_parameters(version)
+            parameters.update(args)
+            rend = flask.render_template(
+                    template, **parameters).encode('utf-8')
             resp = flask.make_response(rend)
             resp.headers['Content-Type'] = 'text/plain'
             resp.headers['Content-Disposition'] = (
@@ -60,13 +72,14 @@ class OSTemplateView(views.MethodView):
         return resp
 
 
-def main():
-    """start the server"""
+def app(config):
+    """Return a configured Flask app"""
     app = flask.Flask(__name__)
-    config = ConfigWrapper()
     app.add_url_rule('/', view_func=OSTemplateView.as_view('index', config))
-    app.run(host='0.0.0.0', port=8080)
+    return app
 
 
 if __name__ == '__main__':
-    main()
+    config = ConfigWrapper()
+    app = app(config)
+    app.run(host='0.0.0.0', port=8080)
