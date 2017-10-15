@@ -15,6 +15,15 @@ class OSTemplateViewTestCase(unittest.TestCase):
         exp = jinja2.Template(TEMPLATE).render(tag='stable').encode('utf-8')
         assert obs.data == exp
 
+    def test_latest_version(self):
+        obs = self.app.get('/?version=latest')
+        exp = jinja2.Template(TEMPLATE).render(tag='stable').encode('utf-8')
+        assert obs.data == exp
+
+    def test_404_version(self):
+        obs = self.app.get('/?version=NON-EXISTANT')
+        assert obs.status == '404 NOT FOUND'
+
     def test_latest_tag(self):
         obs = self.app.get('/?tag=testXX.YY.ZZ')
         exp = jinja2.Template(TEMPLATE).render(tag='testXX.YY.ZZ').encode('utf-8')

@@ -22,8 +22,11 @@ class ConfigWrapper():
         """Does the config know about this version?"""
         return version in self.config
 
-    def get(self, *args, **kwargs):
-        return copy.deepcopy(self.config.get(*args, **kwargs))
+    def get_version(self, version, default=None):
+        ret = default
+        if version in self.config:
+            ret = version
+        return ret
 
     def get_parameters(self, version):
         """Return the parameters for a given version"""
@@ -54,7 +57,7 @@ class OSTemplateView(views.MethodView):
         if len(args) == 0 or 'version' not in args:
             version = 'latest'
         else:
-            version = self.config.get(args['version'], '404')
+            version = self.config.get_version(args['version'], '404')
 
         if version == '404':
             resp = flask.make_response(
